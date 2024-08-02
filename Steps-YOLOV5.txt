@@ -1,0 +1,81 @@
+#### Install and update pip and jtop
+
+sudo apt-get update
+
+sudo apt-get install -y python3-pip
+
+sudo python3 -m pip install --upgrade pip
+
+sudo pip3 install -U jetson-stats
+
+jtop
+
+
+#### Install libraries
+sudo apt-get update
+sudo apt-get install -y liblapack-dev libblas-dev gfortran libfreetype6-dev libopenblas-base libopenmpi-dev libjpeg-dev zlib1g-dev
+sudo apt-get install -y python3-pip
+
+# Update Pip
+python3 -m pip install --upgrade pip
+
+# Install below necessary packages
+# fist list the packages
+python3 -m pip list
+# For numpy, first uninstall the version already installed, and then install numpy==1.19.0
+
+sudo python3 -m pip uninstall numpy
+
+python3 -m pip list
+
+sudo python3 -m pip uninstall numpy==1.19.0
+
+sudo python3 -m pip uninstall pandas==0.22.0
+
+sudo python3 -m pip uninstall Pillow==8.4.0
+
+sudo python3 -m pip uninstall PyYAML==3.12
+
+sudo python3 -m pip uninstall scipy==1.5.4
+
+sudo python3 -m pip uninstall psutil
+
+sudo python3 -m pip uninstall tqdm==4.64.1
+
+sudo python3 -m pip uninstall imutils
+
+# Install Pycuda
+export PATH=/usr/local/cuda-10.2/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda-10.2/lib64:$LD_LIBRARY_PATH
+sudo python3 -m pip install pycuda --user
+
+# Install Seaborn
+sudo apt install python3-seaborn
+
+# Install torch & torchvision
+wget https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -O torch-1.10.0-cp36-cp36m-linux_aarch64.whl
+sudo python3 -m pip install torch-1.10.0-cp36-cp36m-linux_aarch64.whl
+git clone --branch v0.11.1 https://github.com/pytorch/vision torchvision
+cd torchvision
+sudo python3 setup.py install 
+
+
+#####
+# Steps to convert YOLOv5 models to TensorRT engine file
+# Convert pt file to WTS file 
+python3 gen_wts.py -w yolov5s.pt -o yolov5s.wts
+
+# Cmake & Make 
+# If using custom model, make sure to update kNumClas in yolov5/src/config.h
+cd yolov5/
+mkdir build
+cd build
+cp ../../yolov5s.wts .
+cmake ..
+make 
+
+# Build engine
+./yolov5_det -s yolov5s.wts yolov5s.engine s
+
+# Test
+./yolov5_det -d yolov5s.engine ../images
